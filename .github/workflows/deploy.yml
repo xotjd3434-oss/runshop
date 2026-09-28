@@ -1,0 +1,80 @@
+name: Deploy Vite React to GitHub Pages
+
+# main 브랜치에 push하면 자동으로 실행
+on:
+  push:
+    branches:
+      - main
+
+  # GitHub에서 직접 실행할 수도 있도록 설정
+  workflow_dispatch:
+
+# GitHub Pages 배포 권한
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# 동시에 여러 배포가 실행되는 것을 방지
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+
+      # GitHub에 올린 코드를 가져옴
+      - name: Checkout
+        uses: actions/checkout@v4
+
+
+      # Node.js 설치
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+
+      # package.json의 라이브러리 설치
+      - name: Install dependencies
+        run: npm ci
+
+
+      # React 프로젝트 build
+      - name: Build
+        run: npm run build
+
+
+      # GitHub Pages 설정
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+
+
+      # build된 dist 폴더 업로드
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v4
+        with:
+          path: ./dist
+
+
+  deploy:
+
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    runs-on: ubuntu-latest
+
+    needs: build
+
+    steps:
+
+      # GitHub Pages에 실제 배포
+      - name: Deploy
+        id: deployment
+        uses: actions/deploy-pages@v4
