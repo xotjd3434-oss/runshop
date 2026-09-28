@@ -5,5 +5,5 @@ import { defineConfig } from 'vite'
 export default defineConfig({
   plugins: [react()],
   //깃허브 저장소
-  base: '/runshop.git'
+  base: '/runshop/'
 })
